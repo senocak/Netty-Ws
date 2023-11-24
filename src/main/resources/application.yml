@@ -1,0 +1,4 @@
+ws:
+  server:
+    port: 9094
+    host: localhost
