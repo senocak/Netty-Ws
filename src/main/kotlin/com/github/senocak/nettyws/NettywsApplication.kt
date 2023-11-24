@@ -41,6 +41,9 @@ class NettywsApplication {
                 }
                 val namespace: SocketIONamespace = it.addNamespace("/chat")
                 namespace.addConnectListener { client: SocketIOClient ->
+                    val room: String? = client.handshakeData.getSingleUrlParam("room")
+                    if (!room.isNullOrEmpty())
+                        client.joinRoom(room).also { log.info("joining room. $room") }
                     log.info("Client[${client.sessionId}] - Connected to chat module through '${client.handshakeData.url}'")
                 }
                 namespace.addDisconnectListener { client: SocketIOClient ->
@@ -49,7 +52,10 @@ class NettywsApplication {
                 namespace.addEventListener("chat", ChatMessage::class.java) {
                         client: SocketIOClient, data: ChatMessage, _: AckRequest? ->
                     log.info("Client[${client.sessionId}] - Received chat message '$data'")
-                    namespace.broadcastOperations.sendEvent("chat", data)
+                    when {
+                        !data.room.isNullOrEmpty() -> namespace.getRoomOperations(data.room).sendEvent("chat", data)
+                        else -> namespace.broadcastOperations.sendEvent("chat", data)
+                    }
                 }
                 server = it
                 it.start()
@@ -72,5 +78,6 @@ fun main(args: Array<String>) {
 internal class ChatMessage {
     val userName: String? = null
     val message: String? = null
-    override fun toString(): String = "ChatMessage(userName=$userName, message=$message)"
+    val room: String? = null
+    override fun toString(): String = "ChatMessage(userName=$userName, message=$message, room=$room)"
 }

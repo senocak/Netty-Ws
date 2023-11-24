@@ -23,6 +23,7 @@
     <body>
         <form class="well form-inline" onsubmit="return false;">
             <input id="msg" class="input-xlarge" type="text" placeholder="Send message..."/>
+            <input id="room" class="input-xlarge" type="text" placeholder="Room optional"/>
             <button type="button" onClick="sendMessage()" class="btn" id="send">Send</button>
             <button type="button" onClick="sendDisconnect()" class="btn">Close</button>
         </form>
@@ -57,9 +58,10 @@
 
             function sendMessage() {
                 const $msg = $('#msg')
+                const room = $('#room').val()
                 const message = $msg.val()
                 $msg.val('')
-                const jsonObject = {userName: userName, message: message, actionTime: new Date()}
+                const jsonObject = {userName: userName, message: message, room: room, actionTime: new Date()}
                 socket.emit('chat', jsonObject)
             }
 
